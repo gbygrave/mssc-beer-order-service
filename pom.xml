@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.sfg-beer-works</groupId>
-        <artifactId>sfg-beer-works-bom</artifactId>
-        <version>1.0.27</version>
+        <artifactId>sfg-brewery-bom</artifactId>
+        <version>1.0.3</version>
     </parent>
 
     <artifactId>mssc-beer-order-service</artifactId>
@@ -14,6 +14,7 @@
     <description>MSSC Beer Order Service</description>
 
     <dependencies>
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -38,5 +39,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        -->
     </dependencies>
 </project>

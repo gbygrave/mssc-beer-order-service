@@ -15,21 +15,36 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package guru.sfg.beer.order.service.services;
+package guru.sfg.brewery.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-import guru.sfg.brewery.model.BeerOrderDto;
-import guru.sfg.brewery.model.BeerOrderPagedList;
-import org.springframework.data.domain.Pageable;
-
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public interface BeerOrderService {
-    BeerOrderPagedList listOrders(UUID customerId, Pageable pageable);
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CustomerDto {
 
-    BeerOrderDto placeOrder(UUID customerId, BeerOrderDto beerOrderDto);
+    @JsonProperty("id")
+    private UUID id = null;
 
-    BeerOrderDto getOrderById(UUID customerId, UUID orderId);
+    @JsonProperty("version")
+    private Integer version = null;
 
-    void pickupOrder(UUID customerId, UUID orderId);
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssZ", shape=JsonFormat.Shape.STRING)
+    @JsonProperty("createdDate")
+    private OffsetDateTime createdDate = null;
+
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssZ", shape=JsonFormat.Shape.STRING)
+    @JsonProperty("lastModifiedDate")
+    private OffsetDateTime lastModifiedDate = null;
+
+
+    private String name;
+
 }

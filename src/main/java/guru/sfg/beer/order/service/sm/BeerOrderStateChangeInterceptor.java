@@ -1,6 +1,5 @@
 package guru.sfg.beer.order.service.sm;
 
-
 import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;

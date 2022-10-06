@@ -17,7 +17,7 @@ public class AllocationResponseListener {
     private final BeerOrderManager beerOrderManager;
 
     @Transactional
-    @JmsListener(destination = JmsConfig.VALIDATE_ORDER_RESULT_QUEUE)
+    @JmsListener(destination = JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE)
     public void listen(AllocateOrderResponse event) {
         log.debug("Received AllocateOrderResponse: " + event);
         beerOrderManager.processAllocateOrderResponse(event.getBeerOrderDto(),

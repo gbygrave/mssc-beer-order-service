@@ -32,7 +32,7 @@ public class AllocateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
                 .map(msg -> (String) msg.getHeaders().get(BeerOrderManagerImpl.ORDER_ID_HEADER))
                 .ifPresent(orderId -> {
                     BeerOrder beerOrder = beerOrderRepository.findOneById(UUID.fromString(orderId));
-                    jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, beerOrderMapper.beerOrderToDto(beerOrder));
+                    jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_QUEUE, beerOrderMapper.beerOrderToDto(beerOrder));
                     log.debug("Sent Allocation Request for order id: " + orderId);
                 });
     }

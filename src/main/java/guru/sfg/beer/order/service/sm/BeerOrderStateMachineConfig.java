@@ -17,7 +17,6 @@ import java.util.EnumSet;
 @EnableStateMachineFactory
 @RequiredArgsConstructor
 public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<BeerOrderStatusEnum, BeerOrderEventEnum> {
-
     private final ValidateOrderAction validateOrderAction;
     private final AllocateOrderAction allocateOrderAction;
 
@@ -53,6 +52,18 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .withExternal()
                 .event(BeerOrderEventEnum.ALLOCATE_ORDER)
                 .source(BeerOrderStatusEnum.VALIDATED).target(BeerOrderStatusEnum.ALLOCATION_PENDING)
-                .action(allocateOrderAction);
+                .action(allocateOrderAction)
+                .and()
+                .withExternal()
+                .event(BeerOrderEventEnum.ALLOCATION_SUCCESS)
+                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.ALLOCATED)
+                .and()
+                .withExternal()
+                .event(BeerOrderEventEnum.ALLOCATION_FAILED)
+                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.ALLOCATION_EXCEPTION)
+                .and()
+                .withExternal()
+                .event(BeerOrderEventEnum.ALLOCATION_NO_INVENTORY)
+                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.PENDING_INVENTORY);
     }
 }

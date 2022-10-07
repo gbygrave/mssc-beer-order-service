@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(WireMockExtension.class)
 @SpringBootTest
 @Slf4j
+@TestPropertySource(properties = "app.scheduling.enable=false")
 public class BeerOrderManagerImplIT {
     private static final String TEST_BEER_UPC = "12345";
 
@@ -86,8 +88,7 @@ public class BeerOrderManagerImplIT {
 
         await().untilAsserted( () -> {
             BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
-            // TODO: ALLOCATED status
-            assertEquals(BeerOrderStatusEnum.ALLOCATION_PENDING, foundOrder.getOrderStatus());
+            assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
         });
 
         savedBeerOrder = beerOrderRepository.findById(beerOrder.getId()).orElse(null);

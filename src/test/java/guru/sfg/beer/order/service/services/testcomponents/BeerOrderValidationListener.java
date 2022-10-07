@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -18,9 +17,7 @@ public class BeerOrderValidationListener {
     private final JmsTemplate jmsTemplate;
 
     @JmsListener(destination = JmsConfig.VALIDATE_ORDER_QUEUE)
-    public void listen(Message msg) {
-        ValidateOrderRequest request = (ValidateOrderRequest) msg.getPayload();
-
+    public void listen(ValidateOrderRequest request) {
         jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
                                    new ValidateOrderResponse(request.getBeerOrderDto().getId(), true));
     }

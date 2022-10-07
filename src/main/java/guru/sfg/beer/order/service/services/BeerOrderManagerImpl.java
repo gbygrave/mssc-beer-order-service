@@ -19,6 +19,9 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+import static guru.sfg.beer.order.service.domain.BeerOrderEventEnum.BEER_ORDER_PICKED_UP;
+import static guru.sfg.beer.order.service.domain.BeerOrderStatusEnum.ALLOCATED;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -85,11 +88,25 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                 },
                 () -> {
                     log.error("Beer order not found: " + beerOrderId);
-                    List<BeerOrder> orders = beerOrderRepository.findAll();
-                    log.info("Known orders: " + orders);
                 }
         );
     }
+
+    @Override
+    public void pickup(UUID beerOrderId) {
+        beerOrderRepository.findById(beerOrderId).ifPresentOrElse(
+                beerOrder -> {
+                    if (beerOrder.getOrderStatus() != ALLOCATED)
+                        throw new IllegalStateException(
+                                "Order ["+beerOrderId+"] must be in the " + ALLOCATED + " state in order to be picked up.");
+                    sendBeerOrderEvent(beerOrder, BEER_ORDER_PICKED_UP);
+                },
+                () -> {
+                    log.error("Beer order not found: " + beerOrderId);
+                }
+        );
+    }
+
 
     private void updateAllocatedQty(BeerOrderDto beerOrderDto) {
         UUID beerOrderId = beerOrderDto.getId();

@@ -5,20 +5,40 @@ import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import guru.sfg.beer.order.service.sm.actions.AllocateOrderAction;
 import guru.sfg.beer.order.service.sm.actions.ValidateOrderAction;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.Message;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
+import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
+import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 
 import java.util.EnumSet;
+
+import static guru.sfg.beer.order.service.services.BeerOrderManagerImpl.ORDER_ID_HEADER;
 
 @Configuration
 @EnableStateMachineFactory
 @RequiredArgsConstructor
+@Slf4j
 public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<BeerOrderStatusEnum, BeerOrderEventEnum> {
     private final ValidateOrderAction validateOrderAction;
     private final AllocateOrderAction allocateOrderAction;
+
+    @Override
+    public void configure(StateMachineConfigurationConfigurer<BeerOrderStatusEnum, BeerOrderEventEnum> config)
+            throws Exception {
+        config.withConfiguration().listener(new StateMachineListenerAdapter() {
+            @Override
+            public void eventNotAccepted(Message event) {
+                val orderId = event.getHeaders().getOrDefault(ORDER_ID_HEADER, "???");
+                log.error("Event not accepted ["+event.getPayload() + "] for order [" + orderId + "]");
+            }
+        });
+    }
 
     @Override
     public void configure(StateMachineStateConfigurer<BeerOrderStatusEnum, BeerOrderEventEnum> states) throws Exception {
@@ -64,6 +84,10 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .and()
                 .withExternal()
                 .event(BeerOrderEventEnum.ALLOCATION_NO_INVENTORY)
-                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.PENDING_INVENTORY);
+                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.PENDING_INVENTORY)
+                .and()
+                .withExternal()
+                .event(BeerOrderEventEnum.BEER_ORDER_PICKED_UP)
+                .source(BeerOrderStatusEnum.ALLOCATED).target(BeerOrderStatusEnum.PICKED_UP);
     }
 }

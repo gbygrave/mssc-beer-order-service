@@ -102,13 +102,10 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                             }
                         });
                     });
+                    log.debug("Saving updated allocated quantity on lines for order id: " + beerOrderId);
                     beerOrderRepository.saveAndFlush(beerOrder);
                 },
-                () -> {
-                    log.error("Beer order not found: " + beerOrderId);
-                    List<BeerOrder> orders = beerOrderRepository.findAll();
-                    log.info("Known orders: " + orders);
-                }
+                () -> log.error("Beer order not found: " + beerOrderId)
         );
     }
 

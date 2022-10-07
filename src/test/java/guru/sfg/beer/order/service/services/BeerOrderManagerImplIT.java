@@ -109,21 +109,21 @@ public class BeerOrderManagerImplIT {
         BeerOrder beerOrder = createBeerOrder();
         beerOrderManager.newBeerOrder(beerOrder);
 
-        await().untilAsserted( () -> {
+        await().untilAsserted(() -> {
             BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
             assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus());
         });
 
-        beerOrderManager.pickup(beerOrder.getId());
+        beerOrderManager.pickupBeerOrder(beerOrder.getId());
 
-        await().untilAsserted( () -> {
+        await().untilAsserted(() -> {
             BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
             assertEquals(BeerOrderStatusEnum.PICKED_UP, foundOrder.getOrderStatus());
         });
 
-        BeerOrder savedBeerOrder = beerOrderRepository.findById(beerOrder.getId()).orElse(null);
-        assertNotNull(savedBeerOrder);
-        assertEquals(BeerOrderStatusEnum.PICKED_UP, savedBeerOrder.getOrderStatus());
+        BeerOrder pickedUpBeerOrder = beerOrderRepository.findById(beerOrder.getId()).orElse(null);
+        assertNotNull(pickedUpBeerOrder);
+        assertEquals(BeerOrderStatusEnum.PICKED_UP, pickedUpBeerOrder.getOrderStatus());
     }
 
     BeerOrder createBeerOrder() {

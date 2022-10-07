@@ -13,5 +13,5 @@ public interface BeerOrderManager {
 
     void processAllocateOrderResponse(BeerOrderDto beerOrderDto, Boolean allocationError, Boolean pendingInventory);
 
-    void pickup(UUID beerOrderId);
+    void pickupBeerOrder(UUID beerOrderId);
 }

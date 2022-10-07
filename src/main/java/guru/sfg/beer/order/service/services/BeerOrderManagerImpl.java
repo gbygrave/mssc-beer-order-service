@@ -93,7 +93,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
     @Override
-    public void pickup(UUID beerOrderId) {
+    public void pickupBeerOrder(UUID beerOrderId) {
         beerOrderRepository.findById(beerOrderId).ifPresentOrElse(
                 beerOrder -> {
                     if (beerOrder.getOrderStatus() != ALLOCATED)
@@ -101,9 +101,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                                 "Order ["+beerOrderId+"] must be in the " + ALLOCATED + " state in order to be picked up.");
                     sendBeerOrderEvent(beerOrder, BEER_ORDER_PICKED_UP);
                 },
-                () -> {
-                    log.error("Beer order not found: " + beerOrderId);
-                }
+                () -> log.error("Beer order not found: " + beerOrderId)
         );
     }
 

@@ -16,6 +16,7 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,10 +38,18 @@ public class ValidateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
         Optional.ofNullable(context.getMessage())
                 .map(msg -> (String) msg.getHeaders().get(BeerOrderManagerImpl.ORDER_ID_HEADER))
                 .ifPresent(orderId -> {
-                    BeerOrder beerOrder = beerOrderRepository.findOneById(UUID.fromString(orderId));
-                    BeerOrderDto beerOrderDto = beerOrderMapper.beerOrderToDto(beerOrder);
-                    jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, new ValidateOrderRequest(beerOrderDto));
-                    log.debug("Sent Validation request to queue for order id " + orderId);
+                    beerOrderRepository.findById(UUID.fromString(orderId)).ifPresentOrElse(
+                            beerOrder -> {
+                                BeerOrderDto beerOrderDto = beerOrderMapper.beerOrderToDto(beerOrder);
+                                jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, new ValidateOrderRequest(beerOrderDto));
+                                log.debug("Sent Validation request to queue for order id " + orderId);
+                            },
+                            () -> {
+                                log.error("Beer order not found: " + orderId);
+                                List<BeerOrder> orders = beerOrderRepository.findAll();
+                                log.info("Known orders: " + orders);
+                            }
+                    );
                 });
     }
 }

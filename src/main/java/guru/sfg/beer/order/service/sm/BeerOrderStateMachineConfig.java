@@ -4,6 +4,7 @@ import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import guru.sfg.beer.order.service.sm.actions.AllocateOrderAction;
 import guru.sfg.beer.order.service.sm.actions.ValidateOrderAction;
+import guru.sfg.beer.order.service.sm.actions.ValidationFailureAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -25,8 +26,9 @@ import static guru.sfg.beer.order.service.services.BeerOrderManagerImpl.ORDER_ID
 @RequiredArgsConstructor
 @Slf4j
 public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<BeerOrderStatusEnum, BeerOrderEventEnum> {
-    private final ValidateOrderAction validateOrderAction;
-    private final AllocateOrderAction allocateOrderAction;
+    private final ValidateOrderAction     validateOrderAction;
+    private final ValidationFailureAction validationFailureAction;
+    private final AllocateOrderAction     allocateOrderAction;
 
     @Override
     public void configure(StateMachineConfigurationConfigurer<BeerOrderStatusEnum, BeerOrderEventEnum> config)
@@ -68,6 +70,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .withExternal()
                 .event(BeerOrderEventEnum.VALIDATION_FAILED)
                 .source(BeerOrderStatusEnum.VALIDATION_PENDING).target(BeerOrderStatusEnum.VALIDATION_EXCEPTION)
+                .action(validationFailureAction)
                 .and()
                 .withExternal()
                 .event(BeerOrderEventEnum.ALLOCATE_ORDER)

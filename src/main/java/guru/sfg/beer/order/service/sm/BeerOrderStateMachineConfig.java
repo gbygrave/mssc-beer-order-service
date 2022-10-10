@@ -2,9 +2,7 @@ package guru.sfg.beer.order.service.sm;
 
 import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
-import guru.sfg.beer.order.service.sm.actions.AllocateOrderAction;
-import guru.sfg.beer.order.service.sm.actions.ValidateOrderAction;
-import guru.sfg.beer.order.service.sm.actions.ValidationFailureAction;
+import guru.sfg.beer.order.service.sm.actions.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -29,6 +27,8 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
     private final ValidateOrderAction     validateOrderAction;
     private final ValidationFailureAction validationFailureAction;
     private final AllocateOrderAction     allocateOrderAction;
+    private final PendingInventoryAction  pendingInventoryAction;
+    private final AllocationFailureAction allocationFailureAction;
 
     @Override
     public void configure(StateMachineConfigurationConfigurer<BeerOrderStatusEnum, BeerOrderEventEnum> config)
@@ -37,7 +37,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
             @Override
             public void eventNotAccepted(Message event) {
                 val orderId = event.getHeaders().getOrDefault(ORDER_ID_HEADER, "???");
-                log.error("Event not accepted ["+event.getPayload() + "] for order [" + orderId + "]");
+                log.error("Event not accepted [" + event.getPayload() + "] for order [" + orderId + "]");
             }
         });
     }
@@ -84,10 +84,12 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .withExternal()
                 .event(BeerOrderEventEnum.ALLOCATION_FAILED)
                 .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.ALLOCATION_EXCEPTION)
+                .action(allocationFailureAction)
                 .and()
                 .withExternal()
                 .event(BeerOrderEventEnum.ALLOCATION_NO_INVENTORY)
                 .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.PENDING_INVENTORY)
+                .action(pendingInventoryAction)
                 .and()
                 .withExternal()
                 .event(BeerOrderEventEnum.BEER_ORDER_PICKED_UP)

@@ -1,7 +1,6 @@
 package guru.sfg.beer.order.service.services.testcomponents;
 
 import guru.sfg.beer.order.service.config.JmsConfig;
-import guru.sfg.beer.order.service.services.TestConstants;
 import guru.sfg.brewery.model.events.ValidateOrderRequest;
 import guru.sfg.brewery.model.events.ValidateOrderResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,8 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
+import static guru.sfg.beer.order.service.services.TestConstants.CANCELLED_WHILE_PENDING_VALIDATION;
+import static guru.sfg.beer.order.service.services.TestConstants.FAIL_VALIDATION;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,14 +21,14 @@ public class BeerOrderValidationListener {
 
     @JmsListener(destination = JmsConfig.VALIDATE_ORDER_QUEUE)
     public void listen(ValidateOrderRequest request) {
-        boolean isValid = true;
-
         // Condition to fail validation
-        if (Objects.equals(request.getBeerOrderDto().getCustomerRef(), TestConstants.FAIL_VALIDATION)) {
-            isValid = false;
-        }
+        String custRef = request.getBeerOrderDto().getCustomerRef();
+        boolean isInvalid = FAIL_VALIDATION.equals(custRef);
+        boolean dontSend = CANCELLED_WHILE_PENDING_VALIDATION.equals(custRef);
 
-        jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
-                                   new ValidateOrderResponse(request.getBeerOrderDto().getId(), isValid));
+        if (!dontSend) {
+            jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
+                                       new ValidateOrderResponse(request.getBeerOrderDto().getId(), !isInvalid));
+        }
     }
 }

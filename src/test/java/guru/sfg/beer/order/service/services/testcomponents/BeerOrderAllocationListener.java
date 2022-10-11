@@ -10,8 +10,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import static guru.sfg.beer.order.service.services.TestConstants.FAIL_ALLOCATION;
-import static guru.sfg.beer.order.service.services.TestConstants.PARTIAL_ALLOCATION;
+import static guru.sfg.beer.order.service.services.TestConstants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,16 +25,19 @@ public class BeerOrderAllocationListener {
 
         // Simulate partial allocation.
         String customerRef = request.getBeerOrderDto().getCustomerRef();
-        boolean allocationError = FAIL_ALLOCATION.equals(customerRef);
-        boolean pendingInventory = PARTIAL_ALLOCATION.equals(customerRef);
+        boolean dontSend = CANCELLED_WHILE_PENDING_ALLOCATION.equals(customerRef);
 
-        int shortfall = pendingInventory ? 1 : 0;
-        beerOrderDto.getBeerOrderLines().forEach(line -> {
-            line.setQuantityAllocated(line.getOrderQuantity() - shortfall);
-        });
-        jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
-                                   new AllocateOrderResponse(beerOrderDto,
-                                                             allocationError,
-                                                             pendingInventory));
+        if (!dontSend) {
+            boolean allocationError = FAIL_ALLOCATION.equals(customerRef);
+            boolean pendingInventory = PARTIAL_ALLOCATION.equals(customerRef);
+            int shortfall = pendingInventory ? 1 : 0;
+            beerOrderDto.getBeerOrderLines().forEach(line -> {
+                line.setQuantityAllocated(line.getOrderQuantity() - shortfall);
+            });
+            jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
+                                       new AllocateOrderResponse(beerOrderDto,
+                                                                 allocationError,
+                                                                 pendingInventory));
+        }
     }
 }

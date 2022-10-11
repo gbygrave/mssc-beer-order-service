@@ -16,10 +16,10 @@ import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 
 import static guru.sfg.beer.order.service.domain.BeerOrderEventEnum.BEER_ORDER_PICKED_UP;
+import static guru.sfg.beer.order.service.domain.BeerOrderEventEnum.CANCEL_ORDER;
 import static guru.sfg.beer.order.service.domain.BeerOrderStatusEnum.ALLOCATED;
 
 @RequiredArgsConstructor
@@ -63,8 +63,6 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                 },
                 () -> {
                     log.error("Beer order not found: " + beerOrderId);
-                    List<BeerOrder> orders = beerOrderRepository.findAll();
-                    log.info("Known orders: " + orders);
                 });
     }
 
@@ -100,6 +98,16 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                         throw new IllegalStateException(
                                 "Order ["+beerOrderId+"] must be in the " + ALLOCATED + " state in order to be picked up.");
                     sendBeerOrderEvent(beerOrder, BEER_ORDER_PICKED_UP);
+                },
+                () -> log.error("Beer order not found: " + beerOrderId)
+        );
+    }
+
+    @Override
+    public void cancelBeerOrder(UUID beerOrderId) {
+        beerOrderRepository.findById(beerOrderId).ifPresentOrElse(
+                beerOrder -> {
+                    sendBeerOrderEvent(beerOrder, CANCEL_ORDER);
                 },
                 () -> log.error("Beer order not found: " + beerOrderId)
         );

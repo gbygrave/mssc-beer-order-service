@@ -5,6 +5,7 @@ import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.sm.BeerOrderStateChangeInterceptor;
+import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
 import guru.sfg.brewery.model.BeerOrderDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +29,11 @@ import static guru.sfg.beer.order.service.domain.BeerOrderStatusEnum.ALLOCATED;
 public class BeerOrderManagerImpl implements BeerOrderManager {
 
     public static final String ORDER_ID_HEADER = "ORDER_ID_HEADER";
+
     private final StateMachineFactory<BeerOrderStatusEnum, BeerOrderEventEnum> stateMachineFactory;
-    private final BeerOrderRepository beerOrderRepository;
-    private final BeerOrderStateChangeInterceptor beerOrderStateChangeInterceptor;
+    private final BeerOrderRepository                                          beerOrderRepository;
+    private final BeerOrderStateChangeInterceptor                              beerOrderStateChangeInterceptor;
+    private final BeerOrderMapper                                              beerOrderMapper;
 
     @Transactional
     @Override
@@ -91,12 +94,22 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
     @Override
+    public void processDeallocateOrderResponse(BeerOrderDto beerOrderDto) {
+        updateAllocatedQty(beerOrderDto);
+        // Check no inventory remains allocated.
+        beerOrderDto.getBeerOrderLines().forEach(beerOrderLineDto -> {
+            if (beerOrderLineDto.getQuantityAllocated() > 0)
+                throw new RuntimeException("Deallocation incomplete.");
+        });
+    }
+
+    @Override
     public void pickupBeerOrder(UUID beerOrderId) {
         beerOrderRepository.findById(beerOrderId).ifPresentOrElse(
                 beerOrder -> {
                     if (beerOrder.getOrderStatus() != ALLOCATED)
                         throw new IllegalStateException(
-                                "Order ["+beerOrderId+"] must be in the " + ALLOCATED + " state in order to be picked up.");
+                                "Order [" + beerOrderId + "] must be in the " + ALLOCATED + " state in order to be picked up.");
                     sendBeerOrderEvent(beerOrder, BEER_ORDER_PICKED_UP);
                 },
                 () -> log.error("Beer order not found: " + beerOrderId)

@@ -13,6 +13,8 @@ public interface BeerOrderManager {
 
     void processAllocateOrderResponse(BeerOrderDto beerOrderDto, Boolean allocationError, Boolean pendingInventory);
 
+    void processDeallocateOrderResponse(BeerOrderDto beerOrderDto);
+
     void pickupBeerOrder(UUID beerOrderId);
 
     void cancelBeerOrder(UUID beerOrderId);

@@ -8,15 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AllocationResponseListener {
     private final BeerOrderManager beerOrderManager;
 
-    @Transactional
     @JmsListener(destination = JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE)
     public void listen(AllocateOrderResponse event) {
         log.debug("Received AllocateOrderResponse: " + event);

@@ -46,6 +46,7 @@ public class TastingRoomService {
             doPlaceOrder(customerList.get(0));
         } else {
             log.error("Too many or too few tasting room customers found");
+            customerList.forEach(customer -> log.debug(customer.toString()));
         }
     }
 
@@ -54,7 +55,7 @@ public class TastingRoomService {
 
         BeerOrderLineDto beerOrderLine = BeerOrderLineDto.builder()
                 .upc(beerToOrder)
-                .orderQuantity(new Random().nextInt(6)) //todo externalize value to property
+                .orderQuantity(new Random().nextInt(5) + 1) //todo externalize value to property
                 .build();
 
         List<BeerOrderLineDto> beerOrderLineSet = new ArrayList<>();

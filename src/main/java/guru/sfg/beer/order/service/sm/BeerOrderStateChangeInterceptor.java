@@ -1,6 +1,5 @@
 package guru.sfg.beer.order.service.sm;
 
-import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
@@ -14,7 +13,6 @@ import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +24,6 @@ public class BeerOrderStateChangeInterceptor
 
     private final BeerOrderRepository beerOrderRepository;
 
-    @Transactional
     @Override
     public void preStateChange(State<BeerOrderStatusEnum, BeerOrderEventEnum> state,
                                Message<BeerOrderEventEnum> message,
@@ -35,10 +32,16 @@ public class BeerOrderStateChangeInterceptor
         Optional.ofNullable(message)
                 .map(msg -> (String) msg.getHeaders().get(BeerOrderManagerImpl.ORDER_ID_HEADER))
                 .ifPresent(orderId -> {
-                    log.debug("Saving state for order id: " + orderId + " Status: " + state.getId());
-                    BeerOrder beerOrder = beerOrderRepository.getOne(UUID.fromString(orderId));
-                    beerOrder.setOrderStatus(state.getId());
-                    beerOrderRepository.saveAndFlush(beerOrder);
+                    beerOrderRepository.findById(UUID.fromString(orderId)).ifPresentOrElse(
+                            beerOrder -> {
+                                beerOrder.setOrderStatus(state.getId());
+                                beerOrderRepository.saveAndFlush(beerOrder);
+                                log.debug("Saved state for order id: " + orderId + " Status: " + state.getId());
+
+                            },
+                            () -> {
+                                log.error("Order not found: " + orderId);
+                            });
                 });
     }
 }

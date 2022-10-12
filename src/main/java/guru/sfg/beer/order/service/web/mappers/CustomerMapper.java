@@ -15,24 +15,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package guru.sfg.beer.order.service.services;
+package guru.sfg.beer.order.service.web.mappers;
 
+import guru.sfg.beer.order.service.domain.Customer;
+import guru.sfg.brewery.model.CustomerDto;
+import org.mapstruct.Mapper;
 
-import guru.sfg.brewery.model.BeerOrderDto;
-import guru.sfg.brewery.model.BeerOrderPagedList;
-import guru.sfg.brewery.model.CustomerPagedList;
-import org.springframework.data.domain.Pageable;
+@Mapper(uses = {DateMapper.class})
+public interface CustomerMapper {
 
-import java.util.UUID;
+    CustomerDto customerToDto(Customer customer);
 
-public interface BeerOrderService {
-    BeerOrderPagedList listOrders(UUID customerId, Pageable pageable);
-
-    CustomerPagedList listCustomers(Pageable pageable);
-
-    BeerOrderDto placeOrder(UUID customerId, BeerOrderDto beerOrderDto);
-
-    BeerOrderDto getOrderById(UUID customerId, UUID orderId);
-
-    void pickupOrder(UUID customerId, UUID orderId);
+    Customer dtoToCustomer(CustomerDto dto);
 }

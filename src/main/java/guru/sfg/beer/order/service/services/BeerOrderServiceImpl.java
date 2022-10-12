@@ -23,8 +23,10 @@ import guru.sfg.beer.order.service.domain.Customer;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
+import guru.sfg.beer.order.service.web.mappers.CustomerMapper;
 import guru.sfg.brewery.model.BeerOrderDto;
 import guru.sfg.brewery.model.BeerOrderPagedList;
+import guru.sfg.brewery.model.CustomerPagedList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,10 +45,10 @@ import java.util.stream.Collectors;
 public class BeerOrderServiceImpl implements BeerOrderService {
 
     private final BeerOrderRepository beerOrderRepository;
-    private final CustomerRepository customerRepository;
-    private final BeerOrderMapper beerOrderMapper;
-
-    private final BeerOrderManager beerOrderManager;
+    private final CustomerRepository  customerRepository;
+    private final BeerOrderMapper     beerOrderMapper;
+    private final BeerOrderManager    beerOrderManager;
+    private final CustomerMapper      customerMapper;
 
     @Override
     public BeerOrderPagedList listOrders(UUID customerId, Pageable pageable) {
@@ -57,15 +59,27 @@ public class BeerOrderServiceImpl implements BeerOrderService {
                     beerOrderRepository.findAllByCustomer(customerOptional.get(), pageable);
 
             return new BeerOrderPagedList(beerOrderPage
-                    .stream()
-                    .map(beerOrderMapper::beerOrderToDto)
-                    .collect(Collectors.toList()), PageRequest.of(
+                                                  .stream()
+                                                  .map(beerOrderMapper::beerOrderToDto)
+                                                  .collect(Collectors.toList()), PageRequest.of(
                     beerOrderPage.getPageable().getPageNumber(),
                     beerOrderPage.getPageable().getPageSize()),
-                    beerOrderPage.getTotalElements());
+                                          beerOrderPage.getTotalElements());
         } else {
             return null;
         }
+    }
+
+    @Override
+    public CustomerPagedList listCustomers(Pageable pageable) {
+        Page<Customer> customerPage = customerRepository.findAll(pageable);
+        return new CustomerPagedList(
+                customerPage.stream()
+                        .map(customerMapper::customerToDto)
+                        .collect(Collectors.toList()), PageRequest.of(
+                customerPage.getPageable().getPageNumber(),
+                customerPage.getPageable().getPageSize()),
+                customerPage.getTotalElements());
     }
 
     @Transactional

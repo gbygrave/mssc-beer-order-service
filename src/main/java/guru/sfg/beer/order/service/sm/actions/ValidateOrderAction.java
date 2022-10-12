@@ -1,7 +1,6 @@
 package guru.sfg.beer.order.service.sm.actions;
 
 import guru.sfg.beer.order.service.config.JmsConfig;
-import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import guru.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
@@ -16,7 +15,6 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,8 +44,6 @@ public class ValidateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
                             },
                             () -> {
                                 log.error("Beer order not found: " + orderId);
-                                List<BeerOrder> orders = beerOrderRepository.findAll();
-                                log.info("Known orders: " + orders);
                             }
                     );
                 });

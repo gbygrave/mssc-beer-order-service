@@ -13,6 +13,10 @@
     <name>mssc-beer-order-service</name>
     <description>MSSC Beer Order Service</description>
 
+    <properties>
+        <docker.image.prefix>gadb2</docker.image.prefix>
+    </properties>
+
     <dependencies>
 
         <dependency>
